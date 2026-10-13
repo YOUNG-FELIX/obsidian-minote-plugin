@@ -185,31 +185,86 @@ export default class NoteSyncer {
 				const noteDetails = await this.minoteApi.fetchNoteDetails(note.id);
 
 				// 处理图片
+				// imgDict 映射 fileId -> 图片在 vault 中的友好文件名（含扩展名）
 				const imgDict: Record<string, string> = {};
 				const downloadPromises: Promise<void>[] = [];
+				const failedImageIds: string[] = [];
+				let imgDir = '';
 
 				if (noteDetails.data.entry.setting?.data) {
-					const images: ImageInfo[] = [];
-					for (const img of noteDetails.data.entry.setting.data) {
-						const fileId = img.fileId;
-						const fileType = img.mimeType.replace('image/', '');
-						images.push({ fileId, fileType });
-						imgDict[fileId] = fileType;
-					}
+					const rawContent = noteDetails.data.entry.content || '';
+
+					// 按图片在笔记内容中出现的顺序排列，保证序号符合阅读顺序
+					const images: ImageInfo[] = [...noteDetails.data.entry.setting.data]
+						.sort((a, b) => {
+							const ia = rawContent.indexOf(a.fileId);
+							const ib = rawContent.indexOf(b.fileId);
+							return (ia < 0 ? Number.MAX_SAFE_INTEGER : ia) - (ib < 0 ? Number.MAX_SAFE_INTEGER : ib);
+						})
+						.map((img) => ({
+							fileId: img.fileId,
+							fileType: img.mimeType.replace('image/', ''),
+						}));
+
+					// 以笔记名称为基础生成友好文件名：
+					// 单图无序号；多图追加 -01、-02…（两位序号）
+					const baseName = this.buildImageBaseName(note.title);
+					const multi = images.length > 1;
+					const usedNames = new Set<string>();
+					images.forEach((img, index) => {
+						let stem = multi ? `${baseName}-${String(index + 1).padStart(2, '0')}` : baseName;
+						let fileName = `${stem}.${img.fileType}`;
+						// 极端情况下的重名兜底
+						if (usedNames.has(fileName)) {
+							fileName = `${stem}-${img.fileId.slice(0, 4)}.${img.fileType}`;
+						}
+						usedNames.add(fileName);
+						img.name = fileName;
+						imgDict[img.fileId] = fileName;
+					});
 
 					// 创建图片目录
-					const imgDir = joinPath(folderPath, 'img');
+					imgDir = joinPath(folderPath, 'img');
 					await this.fileManager.createFolder(imgDir, Date.now());
 
-					// 并行下载图片
+					// 并行下载图片（使用友好文件名）
 					for (const img of images) {
-						const imgPath = joinPath(imgDir, `${img.fileId}.${img.fileType}`);
-						downloadPromises.push(this.downloadImage(img.fileId, imgPath));
+						const imgPath = joinPath(imgDir, img.name!);
+						downloadPromises.push(
+							this.downloadImage(img.fileId, imgPath)
+								.catch((err) => {
+									console.error('[minote plugin] download image failed: ', img.fileId, err);
+									failedImageIds.push(img.fileId);
+								})
+						);
 					}
 				}
 
 				// 等待所有图片下载完成
 				await Promise.all(downloadPromises);
+
+				// 下载失败的图片不写入引用，保留原始标记
+				for (const failedId of failedImageIds) {
+					delete imgDict[failedId];
+				}
+
+				// 清理旧版本（hash 命名）遗留的图片文件
+				if (imgDir && noteDetails.data.entry.setting?.data) {
+					for (const legacyImg of noteDetails.data.entry.setting.data) {
+						if (failedImageIds.includes(legacyImg.fileId)) {
+							continue;
+						}
+						const legacyPath = joinPath(
+							imgDir,
+							`${legacyImg.fileId}.${legacyImg.mimeType.replace('image/', '')}`
+						);
+						try {
+							await this.fileManager.deleteFile(legacyPath);
+						} catch (err) {
+							console.error('[minote plugin] cleanup legacy image failed: ', legacyPath, err);
+						}
+					}
+				}
 
 				// 转换内容
 				let content = noteDetails.data.entry.content;
@@ -225,13 +280,13 @@ export default class NoteSyncer {
 
 				// 规则3: 转换图片行 (☺格式)
 				content = content.replace(/☺\s+([^<]+)(<0\/><\/>)?/gm, (match: any, fileId: any) => {
-					return fileId in imgDict ? `![](img/${fileId}.${imgDict[fileId]})` : match;
+					return fileId in imgDict ? `![](img/${imgDict[fileId]})` : match;
 				});
 
 				// 规则4: 转换图片行 (<img>格式)
 				content = content.replace(
 					/<img fileid="([^"]+)" imgshow="0" imgdes="" \/>/g, (match: any, fileId: any) => {
-						return fileId in imgDict ? `![](img/${fileId}.${imgDict[fileId]})` : match;
+						return fileId in imgDict ? `![](img/${imgDict[fileId]})` : match;
 					}
 				);
 
@@ -258,6 +313,18 @@ export default class NoteSyncer {
 		}
 
 		return syncedCount
+	}
+
+	/**
+	 * 生成图片文件名的基础部分（笔记名，清洗非法字符并截断长度）。
+	 * 单张图片直接使用该名称；多张图片由调用方再追加 -01、-02 序号。
+	 * 额外清洗 # % [ ]：这些字符在 Markdown 图片链接中会破坏链接解析。
+	 */
+	private buildImageBaseName(title: string): string {
+		const sanitized = Array.from(title.replace(/[\\/:*?"<>|#%\[\]\n\r\t]/g, '').trim())
+			.slice(0, 80)
+			.join('');
+		return sanitized || '未命名';
 	}
 
 	private async downloadImage(fileId: string, imgPath: string) {
