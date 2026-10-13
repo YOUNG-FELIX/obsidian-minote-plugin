@@ -2,13 +2,14 @@
 
 > 本仓库为 [obsidian-minote-plugin](https://github.com/emac/obsidian-minote-plugin) 的移动端适配分支（非官方）。
 > 原插件作者：Emac Shen，MIT 协议。
-> 当前适配版版本：**v0.2.24**（桌面端 / iOS / Android 通用）。
+> 当前适配版版本：**v0.2.25**（桌面端 / iOS / Android 通用）。
 > 本分支改动：
 > - 登录改为手动粘贴 Cookie 方案，替代 Electron 弹窗抓包（移动端无 Electron），桌面端同样可用
 > - 移除 Electron/Node 专属依赖（fs / path / BrowserWindow），改用 Obsidian 跨端 API
 > - manifest 设置 isDesktopOnly: false，移动端可正常加载
 > - 新增同步范围控制（按文件夹 / 按笔记，可仅同步或排除指定项）
 > - 新增图片下载并发数设置、帮助与排查面板、脱敏设置导出
+> - 图片按笔记名重命名（单图无序号；多图 -01、-02…），不再使用服务端 hash 文件名
 > - 桌面端原有功能保持不变
 
 ## 移动端使用方法（适配版新增）
@@ -57,6 +58,21 @@
 - 注销仅清理本地 Cookie，不会登出小米账号云端会话；如需彻底退出云端会话，请在浏览器登录 https://i.mi.com 后点击右上角头像退出；
 - 保存 Cookie 前会先验证，验证失败不会清除已有有效 Cookie。
 
+### 六、图片命名规则（v0.2.25）
+
+笔记图片统一保存在笔记所在文件夹的 `img/` 目录下，并以**笔记名称**命名，不再使用服务端 hash 字符串文件名：
+
+- 笔记只有 **1 张图片**：直接命名为 `笔记名.jpg`；
+- 笔记有 **多张图片**：按图片在笔记正文中出现的顺序命名为 `笔记名-01.jpg`、`笔记名-02.jpg`……序号固定两位（10 张以上也能正确排序）；
+- 文件名会自动清洗 `\ / : * ? " < > | # % [ ]` 等会破坏 Markdown 链接的字符，并限制长度；
+- 升级到 v0.2.25 后首次同步，旧的 hash 命名图片会自动迁移为新名称，笔记中的引用同步更新；个别图片下载失败时会保留其原始标记，不会影响其他图片。
+
+## 适配版更新内容（v0.2.25）
+
+- 同步的笔记图片改为**以笔记名命名**：单图无序号，多图按正文出现顺序追加 `-01`、`-02`（两位序号），替代此前的服务端 hash 字符串文件名。
+- 图片 Markdown 引用同步改写；升级后首次同步自动清理旧 hash 命名图片；下载失败的图片保留原始标记、不影响其余内容。
+- 文件名自动清洗非法字符（含会破坏 wikilink 的 `# % [ ]`），空标题与重名情况均有兜底。
+
 ## 适配版更新内容（v0.2.24）
 
 相对上一版（v0.2.2）的主要变化：
@@ -85,6 +101,7 @@ Obsidian 小米笔记同步插件是一个社区插件，用来将[小米笔记]
 ## 功能
 - 按文件夹存放笔记，同时保留笔记的创建时间和修改时间
 - 自动下载笔记中的图片，并将引用方式替换成 Markdown 格式
+- 图片以笔记名称命名（单图无序号；多图按出现顺序追加 -01、-02…），不再使用服务端 hash 文件名（适配版 v0.2.25 新增）
 - 替换 `<background>` 标签为 `<span>` 标签，以支持文字高亮
 - 去除多余的 `<text>`、`<new-format/>` 标签
 - 兼容旧版本无标题笔记（根据首行内容和笔记 ID 自动生成标题）
@@ -137,15 +154,16 @@ Obsidian 小米笔记同步插件是一个社区插件，用来将[小米笔记]
 # Obsidian Plugin: Minote Sync Plugin (Mobile-adapted fork)
 
 > This repository is an **unofficial mobile-adapted fork** of [obsidian-minote-plugin](https://github.com/emac/obsidian-minote-plugin) by Emac Shen (MIT licensed).
-> Current fork version: **v0.2.24**, works on desktop, iOS and Android.
+> Current fork version: **v0.2.25**, works on desktop, iOS and Android.
 > Fork changes:
 > - Login uses a manual Cookie paste flow instead of the Electron popup (there is no Electron on mobile); it works on desktop too.
 > - Electron/Node-only dependencies (fs / path / BrowserWindow) are replaced with cross-platform Obsidian APIs.
 > - `isDesktopOnly` is set to `false` in the manifest so the plugin loads on mobile.
 > - Adds sync-scope controls (include/exclude selected folders or notes), image download concurrency setting, an in-app help/troubleshooting panel and redacted settings export.
+> - Note images are renamed after the note title (no suffix for a single image; `-01`, `-02`... for multiple) instead of server hash names.
 > - All original desktop features remain unchanged.
 
-This community plugin syncs your [Xiaomi notes](https://i.mi.com/note/h5#/) to Obsidian by converting them to Markdown format and saving them in a specified folder. The initial sync might be slow if you have many notes, but subsequent syncs will only update changed notes incrementally.
+This community plugin syncs your [Xiaomi notes](https://i.mi.com/note/h5#/) to Obsidian by converting them to Markdown format and saving in a specified folder. The initial sync might be slow if you have many notes, but subsequent syncs will only update changed notes incrementally.
 
 ## Install on mobile / Download
 
@@ -178,6 +196,21 @@ On desktop the plugin can still pop up a browser window for QR login; it automat
 - Known limitation: mobile cannot set file timestamps (OS restriction); this does not affect content or incremental sync.
 - Security: the Cookie is a sensitive credential stored in the plugin's `data.json`. Never share your Vault or `data.json`, and clear your clipboard after pasting. Logout only clears the local Cookie; to end the cloud session, sign out at https://i.mi.com in a browser.
 
+## Image naming (v0.2.25)
+
+Note images are stored in the `img/` folder next to the note and are named after the **note title**, instead of server hash strings:
+
+- **One image** in a note: `NoteTitle.jpg`.
+- **Multiple images**: `NoteTitle-01.jpg`, `NoteTitle-02.jpg`… in the order they appear in the note body; the suffix is always two digits so sorting stays correct past 10 images.
+- Characters that break Markdown links (`\ / : * ? " < > | # % [ ]`) are stripped, and long titles are truncated.
+- The first sync after upgrading to v0.2.25 automatically migrates legacy hash-named images and rewrites references; an image that fails to download keeps its original marker and does not affect the others.
+
+## What's new in the fork (v0.2.25)
+
+- Note images are now **named after the note title**: no suffix for a single image; `-01`, `-02` (two-digit) suffixes in appearance order for multiple images, replacing the previous server hash filenames.
+- Markdown references are rewritten accordingly; the first sync after upgrading cleans up legacy hash-named images; failed downloads keep their original markers.
+- Filenames sanitize illegal characters (including `# % [ ]` which break wikilinks), with fallbacks for empty titles and name collisions.
+
 ## What's new in the fork (v0.2.24)
 
 - Folder-level sync scope: all / include / exclude, with search and multi-select (including "Unsorted" and "Excerpts").
@@ -192,6 +225,7 @@ On desktop the plugin can still pop up a browser window for QR login; it automat
 ## Features
 - Stores notes in folders while preserving their creation time and modification time
 - Automatically downloads images from notes and converts references to Markdown format
+- Images are named after the note title (no suffix for a single image; `-01`, `-02`... in appearance order for multiple) instead of server hash names (fork v0.2.25)
 - Replaces `<background>` tags with `<span>` tags to support text highlighting
 - Removes redundant `<text>`、`<new-format/>` tags
 - Compatible with old version untitled notes (auto-generates titles based on first line and note ID)
