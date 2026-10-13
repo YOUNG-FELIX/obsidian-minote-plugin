@@ -20,6 +20,8 @@ export interface Folder {
 export interface ImageInfo {
 	fileId: string;
 	fileType: string;
+	/** 图片在 vault 中的友好文件名（含扩展名），由 NoteSyncer 按笔记名生成 */
+	name?: string;
 }
 
 export interface SyncInfo {
