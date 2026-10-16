@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-minote-plugin",
-	"version": "0.1.0",
+	"version": "0.2.26",
 	"description": "Obsidian Minote Plugin is a plugin to sync Minote(小米笔记) into your Obsidian Vault.",
 	"main": "main.js",
 	"scripts": {

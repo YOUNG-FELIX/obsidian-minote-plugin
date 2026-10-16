@@ -1,7 +1,7 @@
 {
 	"id": "minote-sync",
 	"name": "Minote Sync",
-	"version": "0.2.25",
+	"version": "0.2.26",
 	"minAppVersion": "0.15.0",
 	"description": "Sync Minote(小米笔记) into your vault. Mobile supported via cookie paste login.",
 	"author": "Emac Shen",

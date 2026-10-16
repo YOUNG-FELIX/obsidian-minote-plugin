@@ -2,7 +2,7 @@
 
 > 本仓库为 [obsidian-minote-plugin](https://github.com/emac/obsidian-minote-plugin) 的移动端适配分支（非官方）。
 > 原插件作者：Emac Shen，MIT 协议。
-> 当前适配版版本：**v0.2.25**（桌面端 / iOS / Android 通用）。
+> 当前适配版版本：**v0.2.26**（桌面端 / iOS / Android 通用）。
 > 本分支改动：
 > - 登录改为手动粘贴 Cookie 方案，替代 Electron 弹窗抓包（移动端无 Electron），桌面端同样可用
 > - 移除 Electron/Node 专属依赖（fs / path / BrowserWindow），改用 Obsidian 跨端 API
@@ -16,7 +16,7 @@
 
 ### 一、安装到 Obsidian 移动端
 
-插件文件夹为 `minote-sync`，包含 3 个文件：`main.js`、`manifest.json`、`versions.json`。请到本仓库 [Releases](https://github.com/felix-young-A/obsidian-minote-plugin/releases) 下载最新版安装包，解压后放到 Vault 下的 `.obsidian/plugins/minote-sync/` 目录。
+插件文件夹为 `minote-sync`，包含 3 个文件：`main.js`、`manifest.json`、`versions.json`。请到本仓库 [Releases](https://github.com/YOUNG-FELIX/obsidian-minote-plugin/releases) 下载最新版安装包，解压后放到 Vault 下的 `.obsidian/plugins/minote-sync/` 目录。
 
 - **Android**：文件管理器进入 Vault → `.obsidian/plugins/`（没有就新建）→ 新建 `minote-sync` 文件夹放入 3 个文件 → 回 Obsidian 设置 → 第三方插件 → 启用 Minote Sync。
 - **iOS**：用「文件」App 进入 `Vault/.obsidian/plugins/`（看不到 `.obsidian` 就开启“显示隐藏文件”）→ 新建 `minote-sync` 文件夹放入文件 → 回 Obsidian 启用；若看不到，退出 Obsidian 重进一次。
@@ -67,6 +67,10 @@
 - 文件名会自动清洗 `\ / : * ? " < > | # % [ ]` 等会破坏 Markdown 链接的字符，并限制长度；
 - 升级到 v0.2.25 后首次同步，旧的 hash 命名图片会自动迁移为新名称，笔记中的引用同步更新；个别图片下载失败时会保留其原始标记，不会影响其他图片。
 
+## 适配版更新内容（v0.2.26）
+
+- 版本推进，重新构建发布；内容与 v0.2.25 一致。
+
 ## 适配版更新内容（v0.2.25）
 
 - 同步的笔记图片改为**以笔记名命名**：单图无序号，多图按正文出现顺序追加 `-01`、`-02`（两位序号），替代此前的服务端 hash 字符串文件名。
@@ -86,7 +90,7 @@
 - 修复仅大小写不同的文件夹重命名在大小写不敏感文件系统（Windows / macOS）上的报错。
 - 同步增加防重复点击提示；失败篇数会在同步结束后提示，再次同步自动重试。
 
-各版本安装包与历史说明见本适配分支的 [Releases](https://github.com/felix-young-A/obsidian-minote-plugin/releases)。
+各版本安装包与历史说明见本适配分支的 [Releases](https://github.com/YOUNG-FELIX/obsidian-minote-plugin/releases)。
 
 [![GitHub license](https://badgen.net/github/license/Naereen/Strapdown.js)](https://github.com/emac/obsidian-minote-plugin/blob/master/LICENSE)
 [![Github all releases](https://img.shields.io/github/downloads/emac/obsidian-minote-plugin/total.svg)](https://GitHub.com/emac/obsidian-minote-plugin/releases)
@@ -95,7 +99,7 @@
 Obsidian 小米笔记同步插件是一个社区插件，用来将[小米笔记](https://i.mi.com/note/h5#/)转换为 Markdown 格式保存到 Obsidian 指定的文件夹中。首次使用，如果笔记数量较多，更新会比较慢，后面再去更新的时候只会增量更新有变化的笔记，一般速度很快。
 
 ## 更新历史
-- 适配版（含移动端安装包）：https://github.com/felix-young-A/obsidian-minote-plugin/releases
+- 适配版（含移动端安装包）：https://github.com/YOUNG-FELIX/obsidian-minote-plugin/releases
 - 上游原版：https://github.com/emac/obsidian-minote-plugin/releases
 
 ## 功能
@@ -110,7 +114,7 @@ Obsidian 小米笔记同步插件是一个社区插件，用来将[小米笔记]
 - 支持非中国区的小米云服务
 
 ## 安装方法
-打开 Obsidian 的设置页面，点选左侧`第三方插件`，点击`关闭安全模式`按钮以启用第三方插件，点击社区插件市场的`浏览`按钮，搜索 `minote`，找到 `Minote Sync` 插件，然后安装和启用。移动端或无法访问市场时，可直接在本适配分支 [releases](https://github.com/felix-young-A/obsidian-minote-plugin/releases) 页面手动下载最新版本安装包。
+打开 Obsidian 的设置页面，点选左侧`第三方插件`，点击`关闭安全模式`按钮以启用第三方插件，点击社区插件市场的`浏览`按钮，搜索 `minote`，找到 `Minote Sync` 插件，然后安装和启用。移动端或无法访问市场时，可直接在本适配分支 [releases](https://github.com/YOUNG-FELIX/obsidian-minote-plugin/releases) 页面手动下载最新版本安装包。
 
 ## 设置
 1. 打开 Obsidian 的设置页面，找到 `Minote Sync` 进入到插件设置页面
@@ -154,7 +158,7 @@ Obsidian 小米笔记同步插件是一个社区插件，用来将[小米笔记]
 # Obsidian Plugin: Minote Sync Plugin (Mobile-adapted fork)
 
 > This repository is an **unofficial mobile-adapted fork** of [obsidian-minote-plugin](https://github.com/emac/obsidian-minote-plugin) by Emac Shen (MIT licensed).
-> Current fork version: **v0.2.25**, works on desktop, iOS and Android.
+> Current fork version: **v0.2.26**, works on desktop, iOS and Android.
 > Fork changes:
 > - Login uses a manual Cookie paste flow instead of the Electron popup (there is no Electron on mobile); it works on desktop too.
 > - Electron/Node-only dependencies (fs / path / BrowserWindow) are replaced with cross-platform Obsidian APIs.
@@ -167,7 +171,7 @@ This community plugin syncs your [Xiaomi notes](https://i.mi.com/note/h5#/) to O
 
 ## Install on mobile / Download
 
-Download the latest install zip from this fork's [Releases](https://github.com/felix-young-A/obsidian-minote-plugin/releases), unzip it into `<Vault>/.obsidian/plugins/minote-sync/` (you should get `main.js`, `manifest.json`, `versions.json`), then enable **Minote Sync** under Community plugins.
+Download the latest install zip from this fork's [Releases](https://github.com/YOUNG-FELIX/obsidian-minote-plugin/releases), unzip it into `<Vault>/.obsidian/plugins/minote-sync/` (you should get `main.js`, `manifest.json`, `versions.json`), then enable **Minote Sync** under Community plugins.
 
 - **Android**: use a file manager to create `.obsidian/plugins/minote-sync/` inside your Vault and copy the three files in, then enable the plugin.
 - **iOS**: use the Files app to create the folder (enable "show hidden files" if `.obsidian` is invisible), copy the files, then enable the plugin; restart Obsidian once if it does not appear.
@@ -205,6 +209,10 @@ Note images are stored in the `img/` folder next to the note and are named after
 - Characters that break Markdown links (`\ / : * ? " < > | # % [ ]`) are stripped, and long titles are truncated.
 - The first sync after upgrading to v0.2.25 automatically migrates legacy hash-named images and rewrites references; an image that fails to download keeps its original marker and does not affect the others.
 
+## What's new in the fork (v0.2.26)
+
+- Version bump / rebuilt release; content is identical to v0.2.25.
+
 ## What's new in the fork (v0.2.25)
 
 - Note images are now **named after the note title**: no suffix for a single image; `-01`, `-02` (two-digit) suffixes in appearance order for multiple images, replacing the previous server hash filenames.
@@ -234,7 +242,7 @@ Note images are stored in the `img/` folder next to the note and are named after
 - Supports Xiaomi Cloud Services in non-Chinese regions
 
 ## Installation
-Open Obsidian settings, go to `Community plugins` on the left, click the `Turn off safe mode` button to enable third-party plugins. Click the `Browse` button in the Community plugins marketplace, search for `minote`, find `Minote Sync` plugin, then install and enable it. On mobile (or without marketplace access) you can manually download the latest install zip from this fork's [releases](https://github.com/felix-young-A/obsidian-minote-plugin/releases) page.
+Open Obsidian settings, go to `Community plugins` on the left, click the `Turn off safe mode` button to enable third-party plugins. Click the `Browse` button in the Community plugins marketplace, search for `minote`, find `Minote Sync` plugin, then install and enable it. On mobile (or without marketplace access) you can manually download the latest install zip from this fork's [releases](https://github.com/YOUNG-FELIX/obsidian-minote-plugin/releases) page.
 
 ## Settings
 1. Open Obsidian settings, find `Minote Sync` in the plugin settings
